@@ -7,14 +7,9 @@ plugins {
     val kotlinVersion = "1.3.20"
     kotlin("jvm") version kotlinVersion
     `kotlin-dsl`
+    id("com.gradle.plugin-publish") version "0.10.1"
     `java-gradle-plugin`
-}
-
-dependencies {
-    testImplementation(kotlin("test"))
-    testImplementation(kotlin("test-junit"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.4.0")
-    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.4.0")
+    id("de.gliderpilot.semantic-release") version "1.4.0"
 }
 
 repositories {
@@ -29,10 +24,6 @@ tasks.withType(KotlinCompile::class) {
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
 gradlePlugin {
     plugins {
         register("com.namics.oss.gradle.version-support-plugin") {
@@ -42,3 +33,29 @@ gradlePlugin {
     }
 }
 
+pluginBundle {
+    website = "https://github.com/namics/version-support-plugin"
+    vcsUrl = "https://github.com/namics/version-support-plugin"
+    description = project.description
+    tags = listOf("version", "release", "vcs")
+    (plugins) {
+        "com.namics.oss.gradle.version-support-plugin" {
+            // id is captured from java-gradle-plugin configuration
+            displayName = "Gradle Version Support Plugin"
+            description = "Gradle plugin to support version handling"
+            tags = listOf("version", "release", "vcs")
+            version = project.version.toString()
+        }
+    }
+    mavenCoordinates {
+        groupId = project.group.toString()
+        artifactId = project.name
+        version = project.version.toString()
+    }
+}
+
+if (!version.toString().endsWith("-SNAPSHOT")){
+    tasks.getByName("release"){
+        finalizedBy("publishPlugins")
+    }
+}
