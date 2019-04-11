@@ -59,3 +59,4 @@ if (!version.toString().endsWith("-SNAPSHOT")){
         finalizedBy("publishPlugins")
     }
 }
+
