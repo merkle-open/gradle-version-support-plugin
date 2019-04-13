@@ -34,8 +34,8 @@ gradlePlugin {
 }
 
 pluginBundle {
-    website = "https://github.com/namics/version-support-plugin"
-    vcsUrl = "https://github.com/namics/version-support-plugin"
+    website = "https://github.com/namics/gradle-version-support-plugin"
+    vcsUrl = "https://github.com/namics/gradle-version-support-plugin"
     description = project.description
     tags = listOf("version", "release", "vcs")
     (plugins) {
