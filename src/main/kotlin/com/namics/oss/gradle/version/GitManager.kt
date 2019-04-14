@@ -8,9 +8,6 @@ import java.lang.ProcessBuilder.Redirect.PIPE
 import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
 
-/*
- * Copyright 2000-2019 Namics AG. All rights reserved.
- */
 class GitManager(private val project: Project) {
 
     val root = project.projectDir;
