@@ -38,7 +38,9 @@ class VersionManager(private val project: Project) {
     fun snapshot(): SemVer? {
         val current = SemVer.parse(currentVersion())
         val branch = git.branch()
+
         if (current.isRelease()) {
+            project.logger.info("Release version $current on branch $branch")
             if (branch.matches(Regex("""^develop"""))) {
                 val version = SemVer(current.major, current.minor + 1, 0, "SNAPSHOT")
                 return updateVersion(version)

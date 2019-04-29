@@ -36,6 +36,7 @@ public open class EnforceSnapshotTask : DefaultTask() {
 
     @TaskAction
     fun release(){
+        logger.info("Check requirement of SNAPSHOT version")
         if (!project.version.toString().endsWith("-SNAPSHOT")) {
             val snapshot = VersionManager(project).snapshot()
             GitManager(project).push()

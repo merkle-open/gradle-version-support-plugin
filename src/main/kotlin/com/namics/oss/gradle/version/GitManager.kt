@@ -36,6 +36,7 @@ class GitManager(private val project: Project) {
     val root = project.projectDir;
     val timoutSeconds = 120L
     val logger = project.logger
+    val skipPush = "true" == project.findProperty("skipPush")
 
     fun branch(): String = git("branch", "--no-color")
             .filter { it.startsWith("*") }
@@ -56,6 +57,8 @@ class GitManager(private val project: Project) {
     fun merge(branch: String): Stream<String> = git("merge", branch, "--no-edit", "-m", "[Bot] merge $branch")
 
     fun push(): Stream<String> {
+        if ( skipPush) return Stream.of("Skip push!")
+
         return Stream.of(
                 git("push", "--all"),
                 git("push", "--tags")
