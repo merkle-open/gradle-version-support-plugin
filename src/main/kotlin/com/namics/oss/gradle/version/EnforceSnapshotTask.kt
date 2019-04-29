@@ -25,9 +25,17 @@ package com.namics.oss.gradle.version
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 public open class EnforceSnapshotTask : DefaultTask() {
+
+    @Input
+    val majorBranches: List<Regex> = emptyList()
+    @Input
+    val minorBranches: List<Regex> = listOf(Regex("""^develop.*"""))
+    @Input
+    val patchBranches: List<Regex> = listOf(Regex("""^hotfix.*"""))
 
     init {
         group = "version"
@@ -35,10 +43,10 @@ public open class EnforceSnapshotTask : DefaultTask() {
     }
 
     @TaskAction
-    fun release(){
+    fun release() {
         logger.info("Check requirement of SNAPSHOT version")
         if (!project.version.toString().endsWith("-SNAPSHOT")) {
-            val snapshot = VersionManager(project).snapshot()
+            val snapshot = VersionManager(project, majorBranches, minorBranches, patchBranches).snapshot()
             GitManager(project).push()
 
             throw GradleException("${project.version} is not a SNAPSHOT version"

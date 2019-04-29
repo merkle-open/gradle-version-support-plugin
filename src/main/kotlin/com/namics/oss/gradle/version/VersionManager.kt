@@ -27,10 +27,11 @@ import org.gradle.api.Project
 import java.io.File
 import java.util.*
 
-/*
- * Copyright 2000-2019 Namics AG. All rights reserved.
- */
-class VersionManager(private val project: Project) {
+class VersionManager(private val project: Project,
+                     private val majorBranches: List<Regex> = emptyList(),
+                     private val minorBranches: List<Regex> = listOf(Regex("""^develop.*""")),
+                     private val patchBranches: List<Regex> = listOf(Regex("""^hotfix.*"""))
+) {
 
     private val versionFile = File(project.projectDir, "gradle.properties")
     private val git = GitManager(project)
@@ -41,11 +42,13 @@ class VersionManager(private val project: Project) {
 
         if (current.isRelease()) {
             project.logger.info("Release version $current on branch $branch")
-            if (branch.matches(Regex("""^develop"""))) {
+            if (majorBranches.any { branch.matches(it) }) {
+                val version = SemVer(current.major + 1, 0, 0, "SNAPSHOT")
+                return updateVersion(version)
+            } else if (minorBranches.any { branch.matches(it) }) {
                 val version = SemVer(current.major, current.minor + 1, 0, "SNAPSHOT")
                 return updateVersion(version)
-            }
-            else if (branch.matches(Regex("""^hotfix/.*"""))) {
+            } else if (patchBranches.any { branch.matches(it) }) {
                 val version = SemVer(current.major, current.minor, current.patch + 1, "SNAPSHOT")
                 return updateVersion(version)
             }
@@ -66,7 +69,7 @@ class VersionManager(private val project: Project) {
     }
 
 
-    fun updateVersion(version: SemVer) : SemVer?{
+    fun updateVersion(version: SemVer): SemVer? {
         project.logger.info("Update to $version")
         val key = "version"
         val temp = createTempFile()
@@ -86,7 +89,7 @@ class VersionManager(private val project: Project) {
     }
 
 
-    fun currentVersion() : String {
+    fun currentVersion(): String {
         val properties = Properties()
         properties.load(versionFile.inputStream())
         return properties.getProperty("version")

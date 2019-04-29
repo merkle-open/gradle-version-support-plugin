@@ -24,9 +24,21 @@
 package com.namics.oss.gradle.version
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 public open class ReleaseTask : DefaultTask() {
+
+    @Input
+    val masterBranch = "master"
+    @Input
+    val developBranch = "develop"
+    @Input
+    val majorBranches: List<Regex> = emptyList()
+    @Input
+    val minorBranches: List<Regex> = listOf(Regex("""^develop.*"""))
+    @Input
+    val patchBranches: List<Regex> = listOf(Regex("""^hotfix.*"""))
 
     init {
         group = "version"
@@ -38,26 +50,26 @@ public open class ReleaseTask : DefaultTask() {
         val git = GitManager(project)
         val branch = git.branch()
         logger.info("Check if release is required on {}", branch)
-        if ("master" == branch) {
+        if (masterBranch == branch) {
             logger.info("Perform release on {}", branch)
 
-            val version = VersionManager(project)
+            val version = VersionManager(project, majorBranches, minorBranches, patchBranches)
             version.release()?.let {
                 val release = it;
                 git.tag(release)
 
-                git.checkout("develop")
+                git.checkout(developBranch)
 
                 logger.info("Set version to release $release to avoid merge conflict")
                 version.updateVersion(release)
-                git.merge("master")
+                git.merge(masterBranch)
 
                 version.snapshot()
                 git.push()
-                git.checkout(branch)
+                git.checkout(branch) // checkout previous master branch to restore local state (popd)
             }
         } else {
-            logger.info("SKIP: Not on branch 'master'")
+            logger.info("SKIP: Not on branch '$masterBranch'")
         }
     }
 }

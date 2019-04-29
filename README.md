@@ -4,7 +4,6 @@ Gradle plugin to handle project versions.
 
 Experimental.
 
-
 ## Usage 
 
 Ensure you have a working git installation with permission to push!
@@ -13,7 +12,7 @@ Ensure you have a working git installation with permission to push!
 ```kotlin
 plugins {
 	// ...
-    id("com.namics.oss.gradle.version-support-plugin") version "0.1.0"
+    id("com.namics.oss.gradle.version-support-plugin") version "1.2.0"
 }
 ```
 
@@ -24,8 +23,13 @@ Adds 2 Task the project
 - `enforceSnapshotOnBranch`: enforces the next snapshot version on the current branch
 
 Invoke:
+
 ```bash
-gradle enforceLicenses
+gradle release
+```
+
+ ```bash
+gradle enforceSnapshotOnBranch
 ```
  
 ## Development
