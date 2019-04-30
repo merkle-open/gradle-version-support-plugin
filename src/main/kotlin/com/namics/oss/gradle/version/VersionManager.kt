@@ -83,7 +83,7 @@ class VersionManager(private val project: Project,
             }
         }
         temp.copyTo(versionFile, true)
-        git.add(versionFile)
+        git.add(versionFile.name)
         git.commit("Update version to ${currentVersion()}")
         return version
     }

@@ -25,7 +25,6 @@ package com.namics.oss.gradle.version
 
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import java.io.File
 import java.io.IOException
 import java.lang.ProcessBuilder.Redirect.PIPE
 import java.util.concurrent.TimeUnit
@@ -48,7 +47,7 @@ class GitManager(private val project: Project) {
 
     fun status(): Stream<String> = perform("status")
 
-    fun add(file: File): Stream<String> = git("add", file.path)
+    fun add(file: String): Stream<String> = git("add", file)
 
     fun commit(message: String): Stream<String> = git("commit", "-m", "[Bot] $message")
 
