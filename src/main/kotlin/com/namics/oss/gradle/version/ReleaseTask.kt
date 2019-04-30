@@ -30,15 +30,15 @@ import org.gradle.api.tasks.TaskAction
 public open class ReleaseTask : DefaultTask() {
 
     @Input
-    val masterBranch = "master"
+    var masterBranch = "master"
     @Input
-    val developBranch = "develop"
+    var developBranch = "develop"
     @Input
-    val majorBranches: List<Regex> = emptyList()
+    var majorBranches: List<Regex> = emptyList()
     @Input
-    val minorBranches: List<Regex> = listOf(Regex("""^develop.*"""))
+    var minorBranches: List<Regex> = listOf(Regex("""^develop.*"""))
     @Input
-    val patchBranches: List<Regex> = listOf(Regex("""^hotfix.*"""))
+    var patchBranches: List<Regex> = listOf(Regex("""^hotfix.*"""))
 
     init {
         group = "version"
