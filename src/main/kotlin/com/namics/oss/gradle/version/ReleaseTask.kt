@@ -58,8 +58,6 @@ public open class ReleaseTask : DefaultTask() {
             if (!current.isRelease()) {
                 val newVersion =  SemVer(current.major, current.minor, current.patch)
                 val release = versionManager.updateVersion(newVersion)
-                git.add(".")
-                git.commit("Update version to $release")
                 git.tag(release)
                 git.checkout(developBranch)
                 logger.info("Set version to release $release to avoid merge conflict")
