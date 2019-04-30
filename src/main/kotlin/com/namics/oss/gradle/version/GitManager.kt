@@ -40,7 +40,7 @@ class GitManager(private val project: Project) {
     val logger = project.logger
     val skipPush = "true" == project.findProperty("skipPush")
 
-    fun branch(): String = git("branch", "--no-color")
+    fun branch(): String = perform("branch", "--no-color")
             .filter { it.startsWith("*") }
             .findFirst()
             .map { it.replace(Regex("""\*|\s+"""), "") }
@@ -68,6 +68,13 @@ class GitManager(private val project: Project) {
     }
 
     fun git(vararg arguments: String): Stream<String> {
+        logger.info("GIT: On branch ${branch()}")
+        status().forEach{logger.info("GIT: $it")}
+        val output = perform(*arguments)
+        return output.asSequence().onEach { logger.info("GIT: $it") }.asStream()
+    }
+
+    private fun perform(vararg arguments: String): Stream<String> {
         logger.info("GIT: git {}", arguments)
         try {
             val process = ProcessBuilder("git", *arguments)
@@ -79,7 +86,7 @@ class GitManager(private val project: Project) {
             process.waitFor(timoutSeconds, TimeUnit.SECONDS)
             val errors = ArrayList<String>()
             process.errorStream.bufferedReader().lines().forEach {
-                logger.error("GIT err: {}", it)
+                logger.error("GIT: {}", it)
                 errors.add(it)
             }
 
@@ -87,9 +94,7 @@ class GitManager(private val project: Project) {
             if (exitValue != 0)
                 throw GradleException("exit $exitValue; \nCommand 'git $arguments' failed!\n${errors.joinToString("\n")}")
 
-            return process.inputStream.bufferedReader().lines().asSequence()
-                    .onEach { logger.info("GIT: {}", it) }
-                    .asStream()
+            return process.inputStream.bufferedReader().lines()
         } catch (e: IOException) {
             throw GradleException("Failed to execute command '$this'", e)
         }
