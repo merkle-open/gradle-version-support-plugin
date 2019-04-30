@@ -61,11 +61,10 @@ public open class ReleaseTask : DefaultTask() {
                 git.add(".")
                 git.commit("Update version to $release")
                 git.tag(release)
-                git.checkout(developBranch)
+                git.checkoutRemote(developBranch)
                 logger.info("Set version to release $release to avoid merge conflict")
                 versionManager.updateVersion(release)
                 git.merge(masterBranch)
-
                 versionManager.snapshot()
                 git.push()
                 git.checkout(branch) // checkout previous master branch to restore local state (popd)

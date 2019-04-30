@@ -53,7 +53,9 @@ class GitManager(private val project: Project) {
 
     fun tag(version: SemVer): Stream<String> = git("tag", "-a", version.toString(), "-m", "[Bot] Release $version: create tag")
 
-    fun checkout(branch: String): Stream<String> = git("checkout", "-f", "-B", branch, "origin/$branch")
+    fun checkoutRemote(branch: String): Stream<String> = git("checkout", "-f", "-B", branch, "origin/$branch")
+
+    fun checkout(branch: String): Stream<String> = git("checkout", branch)
 
     fun merge(branch: String): Stream<String> = git("merge", branch, "--no-edit", "-m", "[Bot] merge $branch")
 
