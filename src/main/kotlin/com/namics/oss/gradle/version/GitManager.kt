@@ -30,6 +30,8 @@ import java.io.IOException
 import java.lang.ProcessBuilder.Redirect.PIPE
 import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
+import kotlin.streams.asSequence
+import kotlin.streams.asStream
 
 class GitManager(private val project: Project) {
 
@@ -57,7 +59,7 @@ class GitManager(private val project: Project) {
     fun merge(branch: String): Stream<String> = git("merge", branch, "--no-edit", "-m", "[Bot] merge $branch")
 
     fun push(): Stream<String> {
-        if ( skipPush) return Stream.of("Skip push!")
+        if (skipPush) return Stream.of("Skip push!")
 
         return Stream.of(
                 git("push", "--all"),
@@ -85,7 +87,9 @@ class GitManager(private val project: Project) {
             if (exitValue != 0)
                 throw GradleException("exit $exitValue; \nCommand 'git $arguments' failed!\n${errors.joinToString("\n")}")
 
-            return process.inputStream.bufferedReader().lines()
+            return process.inputStream.bufferedReader().lines().asSequence()
+                    .onEach { logger.info("GIT: {}", it) }
+                    .asStream()
         } catch (e: IOException) {
             throw GradleException("Failed to execute command '$this'", e)
         }
