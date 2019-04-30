@@ -55,9 +55,9 @@ class VersionManager(private val project: Project,
                 return updateVersion(version)
             }
             warn("Branch $branch does not match any configured snapshot branch:" +
-                    "\nmajorBranches : ${majorBranches.map { it.pattern }.joinToString { " | " }}" +
-                    "\nminorBranches : ${minorBranches.map { it.pattern }.joinToString { " | " }}" +
-                    "\npatchBranches : ${patchBranches.map { it.pattern }.joinToString { " | " }}")
+                    "\nmajorBranches : ${majorBranches.map { it.pattern }.joinToString(separator = " | ")}" +
+                    "\nminorBranches : ${minorBranches.map { it.pattern }.joinToString(separator = " | ")}" +
+                    "\npatchBranches : ${patchBranches.map { it.pattern }.joinToString(separator = " | ")}")
         }
         info("SKIP: no adjustment for version $current on branch $branch")
         return null
