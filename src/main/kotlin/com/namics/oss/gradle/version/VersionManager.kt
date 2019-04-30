@@ -43,14 +43,21 @@ class VersionManager(private val project: Project,
             info("Release version $current on branch $branch")
             if (majorBranches.any { branch.matches(it) }) {
                 val version = SemVer(current.major + 1, 0, 0, "SNAPSHOT")
+                info("Set next major $version on branch $branch")
                 return updateVersion(version)
             } else if (minorBranches.any { branch.matches(it) }) {
                 val version = SemVer(current.major, current.minor + 1, 0, "SNAPSHOT")
+                info("Set next minor $version on branch $branch")
                 return updateVersion(version)
             } else if (patchBranches.any { branch.matches(it) }) {
                 val version = SemVer(current.major, current.minor, current.patch + 1, "SNAPSHOT")
+                info("Set next patch $version on branch $branch")
                 return updateVersion(version)
             }
+            warn("Branch $branch does not match any configured snapshot branch:" +
+                    "\nmajorBranches : ${majorBranches.map { it.pattern }.joinToString { " | " }}" +
+                    "\nminorBranches : ${minorBranches.map { it.pattern }.joinToString { " | " }}" +
+                    "\npatchBranches : ${patchBranches.map { it.pattern }.joinToString { " | " }}")
         }
         info("SKIP: no adjustment for version $current on branch $branch")
         return null
@@ -79,6 +86,10 @@ class VersionManager(private val project: Project,
         val properties = Properties()
         properties.load(versionFile.inputStream())
         return properties.getProperty("version")
+    }
+
+    private fun warn(message:String){
+        project.logger.warn("Version: $message");
     }
 
     private fun info(message:String){

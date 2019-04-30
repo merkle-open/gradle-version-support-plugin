@@ -79,7 +79,7 @@ class GitManager(private val project: Project) {
     fun git(vararg arguments: String): Stream<String> {
         if (logger.isInfoEnabled) {
             info("On branch ${branch()}")
-            info("git $arguments")
+            info("git ${arguments.joinToString { " " }}")
             status().forEach { info(it) }
         }
         val output = perform(*arguments)
