@@ -79,7 +79,7 @@ class GitManager(private val project: Project) {
     fun git(vararg arguments: String): Stream<String> {
         if (logger.isInfoEnabled) {
             info("On branch ${branch()}")
-            info("git ${arguments.joinToString { " " }}")
+            info("git ${arguments.joinToString(separator = " ")}")
             status().forEach { info(it) }
         }
         val output = perform(*arguments)
@@ -91,7 +91,7 @@ class GitManager(private val project: Project) {
     }
 
     private fun info(message: String) {
-        logger.info("GIT: $message")
+        logger.info("GIT: {}", message)
     }
 
     private fun perform(vararg arguments: String): Stream<String> {
@@ -111,11 +111,11 @@ class GitManager(private val project: Project) {
 
             val exitValue = process.exitValue()
             if (exitValue != 0)
-                throw GradleException("exit $exitValue; \nCommand 'git $arguments' failed!\n${errors.joinToString("\n")}")
+                throw GradleException("exit $exitValue; \nCommand 'git ${arguments.joinToString(separator = " ")}' failed!\n${errors.joinToString("\n")}")
 
             return process.inputStream.bufferedReader().lines()
         } catch (e: IOException) {
-            throw GradleException("Failed to execute command '$this'", e)
+            throw GradleException("Failed to execute command 'git ${arguments.joinToString(separator = " ")}'", e)
         }
     }
 
