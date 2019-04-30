@@ -46,7 +46,7 @@ class GitManager(private val project: Project) {
             .map { it.replace(Regex("""\*|\s+"""), "") }
             .get()
 
-    fun status(): Stream<String> = git("status")
+    fun status(): Stream<String> = perform("status")
 
     fun add(file: File): Stream<String> = git("add", file.path)
 
