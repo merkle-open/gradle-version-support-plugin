@@ -61,7 +61,7 @@ public open class ReleaseTask : DefaultTask() {
                 git.add(".")
                 git.commit("Update version to $release")
                 git.tag(release)
-                git.checkoutRemote(developBranch)
+                git.checkout(developBranch)
                 logger.info("Set version to release $release to avoid merge conflict")
                 versionManager.updateVersion(release)
                 git.merge(masterBranch)
@@ -74,8 +74,4 @@ public open class ReleaseTask : DefaultTask() {
             logger.info("SKIP: Not on branch '$masterBranch'")
         }
     }
-
-
-
-
 }

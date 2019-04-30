@@ -55,7 +55,15 @@ class GitManager(private val project: Project) {
 
     fun checkoutRemote(branch: String): Stream<String> = git("checkout", "-f", "-B", branch, "origin/$branch")
 
-    fun checkout(branch: String): Stream<String> = git("checkout", branch)
+    fun checkout(branch: String): Stream<String> {
+        try {
+            info("Try checkout local")
+            return git("checkout", branch)
+        } catch (e: GradleException) {
+            info("Failed. Try checkout remote")
+            return checkoutRemote(branch);
+        }
+    }
 
     fun merge(branch: String): Stream<String> = git("merge", branch, "--no-edit", "-m", "[Bot] merge $branch")
 
