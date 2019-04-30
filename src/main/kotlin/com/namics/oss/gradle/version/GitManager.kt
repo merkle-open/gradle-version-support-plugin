@@ -67,11 +67,21 @@ class GitManager(private val project: Project) {
     }
 
     fun git(vararg arguments: String): Stream<String> {
-        logger.info("GIT: On branch ${branch()}")
-        logger.info("GIT: git {}", arguments)
-        status().forEach{logger.info("GIT: $it")}
+        if (logger.isInfoEnabled) {
+            info("On branch ${branch()}")
+            info("git $arguments")
+            status().forEach { info(it) }
+        }
         val output = perform(*arguments)
-        return output.asSequence().onEach { logger.info("GIT: $it") }.asStream()
+
+        if (logger.isInfoEnabled)
+            return output.asSequence().onEach { info(it) }.asStream()
+        else
+            return output
+    }
+
+    private fun info(message: String) {
+        logger.info("GIT: $message")
     }
 
     private fun perform(vararg arguments: String): Stream<String> {

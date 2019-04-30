@@ -40,6 +40,9 @@ public open class ReleaseTask : DefaultTask() {
     @Input
     var patchBranches: List<Regex> = listOf(Regex("""^hotfix.*"""))
 
+    var git = GitManager(project)
+    var versionManager = VersionManager(project, majorBranches, minorBranches, patchBranches)
+
     init {
         group = "version"
         description = "Perform a release on master."
@@ -47,29 +50,33 @@ public open class ReleaseTask : DefaultTask() {
 
     @TaskAction
     fun release() {
-        val git = GitManager(project)
         val branch = git.branch()
         logger.info("Check if release is required on {}", branch)
         if (masterBranch == branch) {
             logger.info("Perform release on {}", branch)
-
-            val version = VersionManager(project, majorBranches, minorBranches, patchBranches)
-            version.release()?.let {
-                val release = it;
+            val current = SemVer.parse(versionManager.currentVersion())
+            if (!current.isRelease()) {
+                val newVersion =  SemVer(current.major, current.minor, current.patch)
+                val release = versionManager.updateVersion(newVersion)
+                git.add(".")
+                git.commit("Update version to $release")
                 git.tag(release)
-
                 git.checkout(developBranch)
-
                 logger.info("Set version to release $release to avoid merge conflict")
-                version.updateVersion(release)
+                versionManager.updateVersion(release)
                 git.merge(masterBranch)
 
-                version.snapshot()
+                versionManager.snapshot()
                 git.push()
                 git.checkout(branch) // checkout previous master branch to restore local state (popd)
-            }
+            } else
+                logger.warn("SKIP: Branch '${masterBranch}' already on release version $current")
         } else {
             logger.info("SKIP: Not on branch '$masterBranch'")
         }
     }
+
+
+
+
 }

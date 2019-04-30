@@ -30,18 +30,17 @@ import java.util.*
 class VersionManager(private val project: Project,
                      private val majorBranches: List<Regex> = emptyList(),
                      private val minorBranches: List<Regex> = listOf(Regex("""^develop.*""")),
-                     private val patchBranches: List<Regex> = listOf(Regex("""^hotfix.*"""))
+                     private val patchBranches: List<Regex> = listOf(Regex("""^hotfix.*""")),
+                     private val git : GitManager = GitManager(project)
 ) {
-
     private val versionFile = File(project.projectDir, "gradle.properties")
-    private val git = GitManager(project)
 
     fun snapshot(): SemVer? {
         val current = SemVer.parse(currentVersion())
         val branch = git.branch()
 
         if (current.isRelease()) {
-            project.logger.info("Release version $current on branch $branch")
+            info("Release version $current on branch $branch")
             if (majorBranches.any { branch.matches(it) }) {
                 val version = SemVer(current.major + 1, 0, 0, "SNAPSHOT")
                 return updateVersion(version)
@@ -53,24 +52,12 @@ class VersionManager(private val project: Project,
                 return updateVersion(version)
             }
         }
-        project.logger.info("SKIP: no adjustment for version $current on branch $branch")
+        info("SKIP: no adjustment for version $current on branch $branch")
         return null
     }
 
-    fun release(): SemVer? {
-        val current = SemVer.parse(currentVersion())
-        if (!current.isRelease()) {
-            val version = SemVer(current.major, current.minor, current.patch)
-            return updateVersion(version)
-        } else {
-            project.logger.info("SKIP: release of $current is already a release version")
-            return null
-        }
-    }
-
-
-    fun updateVersion(version: SemVer): SemVer? {
-        project.logger.info("Update to $version")
+    fun updateVersion(version: SemVer): SemVer {
+        info("Update to $version on ${git.branch()}")
         val key = "version"
         val temp = createTempFile()
         temp.deleteOnExit()
@@ -88,11 +75,13 @@ class VersionManager(private val project: Project,
         return version
     }
 
-
     fun currentVersion(): String {
         val properties = Properties()
         properties.load(versionFile.inputStream())
         return properties.getProperty("version")
     }
 
+    private fun info(message:String){
+        project.logger.info("Version: $message");
+    }
 }
