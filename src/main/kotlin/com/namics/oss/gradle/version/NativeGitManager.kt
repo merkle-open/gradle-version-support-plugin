@@ -30,9 +30,8 @@ import java.lang.ProcessBuilder.Redirect.PIPE
 import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
 import kotlin.streams.asSequence
-import kotlin.streams.asStream
 
-class NativeGitManager(private val project: Project) : GitManager {
+public class NativeGitManager(private val project: Project) : GitManager {
 
     val root = project.projectDir;
     val timoutSeconds = 120L
@@ -81,7 +80,7 @@ class NativeGitManager(private val project: Project) : GitManager {
         }
         val output = perform(*arguments)
         if (logger.isInfoEnabled)
-            output.asSequence().onEach { info(it) }.asStream()
+            output.asSequence().forEach { info(it) }
     }
 
     private fun info(message: String) {
@@ -112,6 +111,4 @@ class NativeGitManager(private val project: Project) : GitManager {
             throw GradleException("Failed to execute command 'git ${arguments.joinToString(separator = " ")}'", e)
         }
     }
-
-
 }

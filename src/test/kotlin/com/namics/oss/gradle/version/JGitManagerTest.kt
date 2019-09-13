@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test
 internal class JGitManagerTest {
 
     @Test
+    @Disabled("manual only to avoid dirty repository, double check what you are committing!")
     internal fun branch() {
         val manager = JGitManager()
         val original = manager.branch()

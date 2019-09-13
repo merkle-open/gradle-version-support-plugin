@@ -26,7 +26,7 @@ package com.namics.oss.gradle.version
 /*
  * Copyright 2000-2019 Namics AG. All rights reserved.
  */
-interface GitManager {
+interface  GitManager {
     fun branch(): String
     fun add(file: String)
     fun commit(message: String)

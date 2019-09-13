@@ -35,7 +35,7 @@ import org.eclipse.jgit.util.FS
 import org.gradle.api.GradleException
 import java.io.File
 
-class JGitManager(val privateKey: File? = null,
+public class JGitManager(val privateKey: File? = null,
                   val privateKeyPassphrase: String? = null,
                   val remoteUri: String? = null,
                   var remote: String? = null,
@@ -104,7 +104,7 @@ class JGitManager(val privateKey: File? = null,
                 .setCreateBranch(true)
                 .setName(branch)
                 .setUpstreamMode(TRACK)
-                .setStartPoint(remote + "/" + branch)
+                .setStartPoint("$remote/$branch")
                 .call()
     }
 
@@ -140,44 +140,45 @@ class JGitManager(val privateKey: File? = null,
                 }.call()
     }
 
+    private class PassphraseUserInfo(private val passphrase: String) : UserInfo {
+
+        override fun getPassphrase(): String {
+            return passphrase
+        }
+
+        override fun getPassword(): String? {
+            return null
+        }
+
+        override fun promptPassword(message: String): Boolean {
+            return false
+        }
+
+        override fun promptPassphrase(message: String): Boolean {
+            return true
+        }
+
+        override fun promptYesNo(message: String): Boolean {
+            return false
+        }
+
+        override fun showMessage(message: String) {
+            //noop
+        }
+
+    }
+
+    private class SimpleJSshLogger : com.jcraft.jsch.Logger {
+
+        override fun isEnabled(level: Int): Boolean {
+            return true;
+        }
+
+        override fun log(level: Int, message: String) {
+            println("JSch: $message")
+        }
+    }
 }
 
-class PassphraseUserInfo(private val passphrase: String) : UserInfo {
 
-    override fun getPassphrase(): String {
-        return passphrase
-    }
-
-    override fun getPassword(): String? {
-        return null
-    }
-
-    override fun promptPassword(message: String): Boolean {
-        return false
-    }
-
-    override fun promptPassphrase(message: String): Boolean {
-        return true
-    }
-
-    override fun promptYesNo(message: String): Boolean {
-        return false
-    }
-
-    override fun showMessage(message: String) {
-        //noop
-    }
-
-}
-
-class SimpleJSshLogger : com.jcraft.jsch.Logger {
-
-    override fun isEnabled(level: Int): Boolean {
-        return true;
-    }
-
-    override fun log(level: Int, message: String) {
-       println("JSch: $message")
-    }
-}
 
