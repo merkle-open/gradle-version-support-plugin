@@ -46,8 +46,8 @@ internal class JGitManagerTest {
     @Disabled("manual only to avoid dirty repository, double check what you are committing!")
     internal fun commitAndPush() {
         val manager = JGitManager()
-        manager.add(".")
-        manager.commit("feat(jgit): add basic implementation of git operations using jgit")
+//        manager.add(".")
+//        manager.commit("feat(jgit): add basic implementation of git operations using jgit")
         manager.push();
     }
 }

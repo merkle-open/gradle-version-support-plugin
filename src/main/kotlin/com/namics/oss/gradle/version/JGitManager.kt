@@ -25,6 +25,7 @@ package com.namics.oss.gradle.version
 
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
+import com.jcraft.jsch.UserInfo
 import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode.TRACK
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.errors.GitAPIException
@@ -35,6 +36,7 @@ import org.gradle.api.GradleException
 import java.io.File
 
 class JGitManager(val privateKey: File? = null,
+                  val privateKeyPassphrase: String? = null,
                   val remoteUri: String? = null,
                   var remote: String? = null,
                   val initialBranch: String? = null) : GitManager {
@@ -42,14 +44,16 @@ class JGitManager(val privateKey: File? = null,
     private val repository = FileRepositoryBuilder().readEnvironment().findGitDir().build()
     private val git: Git = Git(repository);
 
-
     private val sshSessionFactory: SshSessionFactory = object : JschConfigSessionFactory() {
         override fun configure(host: OpenSshConfig.Host, session: Session) {
-            //session.setPassword(password);
+            privateKeyPassphrase?.let {
+                session.setUserInfo(PassphraseUserInfo(it));
+            }
         }
 
         override fun createDefaultJSch(fs: FS): JSch {
             JSch.setConfig("StrictHostKeyChecking", "no");
+            JSch.setConfig("PreferredAuthentications", "publickey");
             if (privateKey != null) {
                 val defaultJSch = super.createDefaultJSch(fs)
                 defaultJSch.addIdentity(privateKey.getAbsolutePath())
@@ -61,13 +65,11 @@ class JGitManager(val privateKey: File? = null,
     }
 
     init {
-        setup();
-    }
-
-    private fun setup() {
         if (remote == null)
             remote = "origin"
         if (remoteUri != null) {
+            if (remote == "origin")
+                git.remoteRemove().setRemoteName(remote).call()
             git.remoteAdd()
                     .setName(remote)
                     .setUri(URIish(remoteUri))
@@ -137,4 +139,31 @@ class JGitManager(val privateKey: File? = null,
                 }.call()
     }
 
+}
+
+class PassphraseUserInfo(private val passphrase: String) : UserInfo {
+
+    override fun getPassphrase(): String {
+        return passphrase
+    }
+
+    override fun getPassword(): String? {
+        return null
+    }
+
+    override fun promptPassword(message: String): Boolean {
+        return false
+    }
+
+    override fun promptPassphrase(message: String): Boolean {
+        return false
+    }
+
+    override fun promptYesNo(message: String): Boolean {
+        return false
+    }
+
+    override fun showMessage(message: String) {
+        //noop
+    }
 }
