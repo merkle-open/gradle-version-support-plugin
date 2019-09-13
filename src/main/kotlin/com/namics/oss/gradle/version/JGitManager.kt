@@ -54,6 +54,7 @@ class JGitManager(val privateKey: File? = null,
         override fun createDefaultJSch(fs: FS): JSch {
             JSch.setConfig("StrictHostKeyChecking", "no");
             JSch.setConfig("PreferredAuthentications", "publickey");
+            JSch.setLogger(SimpleJSshLogger());
             if (privateKey != null) {
                 val defaultJSch = super.createDefaultJSch(fs)
                 defaultJSch.addIdentity(privateKey.getAbsolutePath())
@@ -156,7 +157,7 @@ class PassphraseUserInfo(private val passphrase: String) : UserInfo {
     }
 
     override fun promptPassphrase(message: String): Boolean {
-        return false
+        return true
     }
 
     override fun promptYesNo(message: String): Boolean {
@@ -166,4 +167,17 @@ class PassphraseUserInfo(private val passphrase: String) : UserInfo {
     override fun showMessage(message: String) {
         //noop
     }
+
 }
+
+class SimpleJSshLogger : com.jcraft.jsch.Logger {
+
+    override fun isEnabled(level: Int): Boolean {
+        return true;
+    }
+
+    override fun log(level: Int, message: String) {
+       println("JSch: $message")
+    }
+}
+
