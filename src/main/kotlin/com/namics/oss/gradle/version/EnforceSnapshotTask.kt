@@ -36,6 +36,8 @@ public open class EnforceSnapshotTask : DefaultTask() {
     var minorBranches: List<Regex> = listOf(Regex("""^develop.*"""))
     @Input
     var patchBranches: List<Regex> = listOf(Regex("""^hotfix.*"""))
+    @Input
+    val git : GitManager = NativeGitManager(project)
 
     init {
         group = "version"
@@ -46,11 +48,10 @@ public open class EnforceSnapshotTask : DefaultTask() {
     fun release() {
         logger.info("Check requirement of SNAPSHOT version")
         if (!project.version.toString().endsWith("-SNAPSHOT")) {
-            val snapshot = VersionManager(project, majorBranches, minorBranches, patchBranches).snapshot()
-            GitManager(project).push()
-
+            val snapshot = VersionManager(project, majorBranches, minorBranches, patchBranches, git).snapshot()
+            git.push()
             throw GradleException("${project.version} is not a SNAPSHOT version"
-                    + "\nBranch '${GitManager(project).branch()}' must represent a SNAPSHOT version"
+                    + "\nBranch '${git.branch()}' must represent a SNAPSHOT version"
                     + "\nVersion was set to $snapshot, next build should succeed!")
         }
     }

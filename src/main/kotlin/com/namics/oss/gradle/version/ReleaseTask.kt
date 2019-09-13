@@ -39,6 +39,8 @@ public open class ReleaseTask : DefaultTask() {
     var minorBranches: List<Regex> = listOf(Regex("""^develop.*"""))
     @Input
     var patchBranches: List<Regex> = listOf(Regex("""^hotfix.*"""))
+    @Input
+    val git : GitManager = NativeGitManager(project)
 
 
     init {
@@ -48,13 +50,12 @@ public open class ReleaseTask : DefaultTask() {
 
     @TaskAction
     fun release() {
-        val git = GitManager(project)
 
         val branch = git.branch()
         logger.info("Check if release is required on {}", branch)
         if (masterBranch == branch) {
             logger.info("Perform release on {}", branch)
-            val versionManager = VersionManager(project, majorBranches, minorBranches, patchBranches)
+            val versionManager = VersionManager(project, majorBranches, minorBranches, patchBranches, git)
             val current = SemVer.parse(versionManager.currentVersion())
             if (!current.isRelease()) {
                 val newVersion =  SemVer(current.major, current.minor, current.patch)

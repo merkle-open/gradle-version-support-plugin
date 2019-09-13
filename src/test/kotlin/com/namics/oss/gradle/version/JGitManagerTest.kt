@@ -23,15 +23,31 @@
  */
 package com.namics.oss.gradle.version
 
-/*
- * Copyright 2000-2019 Namics AG. All rights reserved.
- */
-interface GitManager {
-    fun branch(): String
-    fun add(file: String)
-    fun commit(message: String)
-    fun tag(version: SemVer)
-    fun checkout(branch: String)
-    fun merge(branch: String)
-    fun push()
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+
+internal class JGitManagerTest {
+
+    @Test
+    internal fun branch() {
+        val manager = JGitManager()
+        val original = manager.branch()
+        manager.checkout("test/branch")
+        val test = manager.branch()
+        try {
+            Assertions.assertFalse(original.equals(test));
+        } finally {
+            manager.checkout(original);
+        }
+    }
+
+    @Test
+    @Disabled("manual only to avoid dirty repository, double check what you are committing!")
+    internal fun commitAndPush() {
+        val manager = JGitManager()
+        manager.add(".")
+        manager.commit("feat(jgit): add basic implementation of git operations using jgit")
+        manager.push();
+    }
 }
