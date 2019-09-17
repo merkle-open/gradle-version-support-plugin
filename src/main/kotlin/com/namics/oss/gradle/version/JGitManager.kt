@@ -23,47 +23,25 @@
  */
 package com.namics.oss.gradle.version
 
-import com.jcraft.jsch.JSch
-import com.jcraft.jsch.Session
-import com.jcraft.jsch.UserInfo
 import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode.TRACK
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.errors.GitAPIException
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
-import org.eclipse.jgit.transport.*
-import org.eclipse.jgit.util.FS
+import org.eclipse.jgit.transport.SshTransport
+import org.eclipse.jgit.transport.URIish
+import org.eclipse.jgit.transport.sshd.SshdSessionFactory
 import org.gradle.api.GradleException
-import java.io.File
+import org.gradle.api.Project
 
-public class JGitManager(val privateKey: File? = null,
-                  val privateKeyPassphrase: String? = null,
-                  val remoteUri: String? = null,
-                  var remote: String? = null,
-                  val initialBranch: String? = null) : GitManager {
+public class JGitManager(val remoteUri: String? = null,
+                         var remote: String? = null,
+                         val initialBranch: String? = null,
+                         val project: Project) : GitManager {
 
-    private val repository = FileRepositoryBuilder().readEnvironment().findGitDir().build()
+    private val repository = FileRepositoryBuilder().setWorkTree(project.projectDir).build()
     private val git: Git = Git(repository);
-
-    private val sshSessionFactory: SshSessionFactory = object : JschConfigSessionFactory() {
-        override fun configure(host: OpenSshConfig.Host, session: Session) {
-            privateKeyPassphrase?.let {
-                session.setUserInfo(PassphraseUserInfo(it));
-            }
-        }
-
-        override fun createDefaultJSch(fs: FS): JSch {
-            JSch.setConfig("StrictHostKeyChecking", "no");
-            JSch.setConfig("PreferredAuthentications", "publickey");
-            JSch.setLogger(SimpleJSshLogger());
-            if (privateKey != null) {
-                val defaultJSch = super.createDefaultJSch(fs)
-                defaultJSch.addIdentity(privateKey.getAbsolutePath())
-                return defaultJSch
-            } else {
-                return super.createDefaultJSch(fs)
-            }
-        }
-    }
+    private val sshSessionFactory: SshdSessionFactory = SshdSessionFactory()
+    val skipPush = "true" == project.findProperty("skipPush")
 
     init {
         if (remote == null)
@@ -131,6 +109,7 @@ public class JGitManager(val privateKey: File? = null,
     }
 
     override fun push() {
+        if (skipPush) return
         git.push()
                 .setPushTags()
                 .setPushAll()
@@ -140,44 +119,6 @@ public class JGitManager(val privateKey: File? = null,
                 }.call()
     }
 
-    private class PassphraseUserInfo(private val passphrase: String) : UserInfo {
-
-        override fun getPassphrase(): String {
-            return passphrase
-        }
-
-        override fun getPassword(): String? {
-            return null
-        }
-
-        override fun promptPassword(message: String): Boolean {
-            return false
-        }
-
-        override fun promptPassphrase(message: String): Boolean {
-            return true
-        }
-
-        override fun promptYesNo(message: String): Boolean {
-            return false
-        }
-
-        override fun showMessage(message: String) {
-            //noop
-        }
-
-    }
-
-    private class SimpleJSshLogger : com.jcraft.jsch.Logger {
-
-        override fun isEnabled(level: Int): Boolean {
-            return true;
-        }
-
-        override fun log(level: Int, message: String) {
-            println("JSch: $message")
-        }
-    }
 }
 
 
