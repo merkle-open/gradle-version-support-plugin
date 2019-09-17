@@ -8,7 +8,15 @@ Experimental.
 
 To use the plugin you need a git repository with a remote with push permissions for involved branches and tags.
  
-### SSH private key
+### Git Authentication
+
+#### Token in URL
+
+If your git hosting supports credentials in URLs with a token you may use a suitable remote url. (e.g. github using a token)
+`JGitManager(remoteUri = "https://${GITHUB_TOKEN}@github.com:/path/to/repository.git")`
+The token can be provided as encrypted environment variable. 
+
+#### SSH private key
 
 You need to have a "default" ssh private key without a passphrase at the systems default location.
 In a continuous integration environment you may achieve that by adding the `id_rsa` from a (secure) environment variable configured in you CI system.
@@ -54,7 +62,7 @@ versionSupport {
             project = project,
             initialBranch = System.getenv("CI_COMMIT_REF_NAME"),
             remote = "upstream",
-            remoteUri = "git@ssh.git.hosting:path/to/repository.git" )
+            remoteUri = "git@ssh.git.hosting:/path/to/repository.git" )
 }
 
 ```
