@@ -30,8 +30,19 @@ import org.gradle.kotlin.dsl.register
 public class VersionSupportPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = project.run {
-        tasks.register("enforceSnapshotOnBranch", EnforceSnapshotTask::class)
-        tasks.register("release", ReleaseTask::class)
+        val extension = project.extensions.create("versionSupport", VersionSupportExtension::class.java, project)
+        tasks.register("enforceSnapshotOnBranch", EnforceSnapshotTask::class) {
+            majorBranches = extension.majorBranches
+            minorBranches = extension.minorBranches
+            patchBranches = extension.patchBranches
+            git = extension.git
+        }
+        tasks.register("release", ReleaseTask::class) {
+            majorBranches = extension.majorBranches
+            minorBranches = extension.minorBranches
+            patchBranches = extension.patchBranches
+            git = extension.git
+        }
     }
 
 }

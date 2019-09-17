@@ -27,11 +27,11 @@ import org.gradle.api.Project
 import java.io.File
 import java.util.*
 
-class VersionManager(private val project: Project,
+public class VersionManager(private val project: Project,
                      private val majorBranches: List<Regex> = emptyList(),
                      private val minorBranches: List<Regex> = listOf(Regex("""^develop.*""")),
                      private val patchBranches: List<Regex> = listOf(Regex("""^hotfix.*""")),
-                     private val git : GitManager = GitManager(project)
+                     val git : GitManager = NativeGitManager(project)
 ) {
     private val versionFile = File(project.projectDir, "gradle.properties")
 

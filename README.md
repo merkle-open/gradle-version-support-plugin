@@ -6,16 +6,58 @@ Experimental.
 
 ## Usage 
 
-Ensure you have a working git installation with permission to push!
+To use the plugin you need a git repository with a remote with push permissions for involved branches and tags.
+ 
+### SSH private key
+
+You need to have a "default" ssh private key without a passphrase at the systems default location.
+In a continuous integration environment you may achieve that by adding the `id_rsa` from a (secure) environment variable configured in you CI system.
+
+```bash
+mkdir -p ~/.ssh
+echo "$SSH_PRIVATE_KEY" | tr -d '\r'  > ~/.ssh/id_rsa
+chmod 600 ~/.ssh/id_rsa
+```
+
+Alternatively you may rely on `ssh-agent` with native `git` if available on your build machine.
+```bash
+  which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
+  eval $(ssh-agent -s)
+  mkdir -p ~/.ssh
+  echo -n "$SSH_PRIVATE_KEY" | ssh-add - >/dev/null
+```
+
+### Git operation
+
+You may either rely on a native `git` on your build machine or use JGit based implementation that does not require further binaries on you build machine. 
 
 `build.gralde.kts`
 ```kotlin
 plugins {
 	// ...
-    id("com.namics.oss.gradle.version-support-plugin") version "1.2.0"
+    id("com.namics.oss.gradle.version-support-plugin") version "1.3.0"
 }
-```
 
+// ...
+
+// either rely on native git using defaults (default values)
+versionSupport {
+    git = NativeGitManager(project) 
+    majorBranches = emptyList()
+    minorBranches = listOf(Regex("""^develop.*"""))
+    patchBranches = listOf(Regex("""^hotfix.*"""))
+}
+
+// or explicitly configure plugin to use JGit
+versionSupport {
+    git = JGitManager(
+            project = project,
+            initialBranch = System.getenv("CI_COMMIT_REF_NAME"),
+            remote = "upstream",
+            remoteUri = "git@ssh.git.hosting:path/to/repository.git" )
+}
+
+```
 
 Adds 2 Task the project 
 
@@ -30,6 +72,8 @@ gradle release
 
  ```bash
 gradle enforceSnapshotOnBranch
+
+
 ```
  
 ## Development

@@ -23,101 +23,15 @@
  */
 package com.namics.oss.gradle.version
 
-import org.gradle.api.GradleException
-import org.gradle.api.Project
-import java.io.IOException
-import java.lang.ProcessBuilder.Redirect.PIPE
-import java.util.concurrent.TimeUnit
-import java.util.stream.Stream
-import kotlin.streams.asSequence
-import kotlin.streams.asStream
-
-class GitManager(private val project: Project) {
-
-    val root = project.projectDir;
-    val timoutSeconds = 120L
-    val logger = project.logger
-    val skipPush = "true" == project.findProperty("skipPush")
-
-    fun branch(): String = perform("branch", "--no-color")
-            .filter { it.startsWith("*") }
-            .findFirst()
-            .map { it.replace(Regex("""\*|\s+"""), "") }
-            .get()
-
-    fun status(): Stream<String> = perform("status")
-
-    fun add(file: String): Stream<String> = git("add", file)
-
-    fun commit(message: String): Stream<String> = git("commit", "-m", "[Bot] $message")
-
-    fun tag(version: SemVer): Stream<String> = git("tag", "-a", version.toString(), "-m", "[Bot] Release $version: create tag")
-
-    fun checkoutRemote(branch: String): Stream<String> = git("checkout", "-f", "-B", branch, "origin/$branch")
-
-    fun checkout(branch: String): Stream<String> {
-        try {
-            info("Try checkout local")
-            return git("checkout", branch)
-        } catch (e: GradleException) {
-            info("Failed. Try checkout remote")
-            return checkoutRemote(branch);
-        }
-    }
-
-    fun merge(branch: String): Stream<String> = git("merge", branch, "--no-edit", "-m", "[Bot] merge $branch")
-
-    fun push(): Stream<String> {
-        if (skipPush) return Stream.of("Skip push!")
-
-        return Stream.of(
-                git("push", "--all"),
-                git("push", "--tags")
-        ).flatMap { it }
-    }
-
-    fun git(vararg arguments: String): Stream<String> {
-        if (logger.isInfoEnabled) {
-            info("On branch ${branch()}")
-            info("git ${arguments.joinToString(separator = " ")}")
-            status().forEach { info(it) }
-        }
-        val output = perform(*arguments)
-
-        if (logger.isInfoEnabled)
-            return output.asSequence().onEach { info(it) }.asStream()
-        else
-            return output
-    }
-
-    private fun info(message: String) {
-        logger.info("GIT: {}", message)
-    }
-
-    private fun perform(vararg arguments: String): Stream<String> {
-        try {
-            val process = ProcessBuilder("git", *arguments)
-                    .directory(root)
-                    .redirectOutput(PIPE)
-                    .redirectError(PIPE)
-                    .start()
-
-            process.waitFor(timoutSeconds, TimeUnit.SECONDS)
-            val errors = ArrayList<String>()
-            process.errorStream.bufferedReader().lines().forEach {
-                logger.error("GIT: {}", it)
-                errors.add(it)
-            }
-
-            val exitValue = process.exitValue()
-            if (exitValue != 0)
-                throw GradleException("exit $exitValue; \nCommand 'git ${arguments.joinToString(separator = " ")}' failed!\n${errors.joinToString("\n")}")
-
-            return process.inputStream.bufferedReader().lines()
-        } catch (e: IOException) {
-            throw GradleException("Failed to execute command 'git ${arguments.joinToString(separator = " ")}'", e)
-        }
-    }
-
-
+/*
+ * Copyright 2000-2019 Namics AG. All rights reserved.
+ */
+interface  GitManager {
+    fun branch(): String
+    fun add(file: String)
+    fun commit(message: String)
+    fun tag(version: SemVer)
+    fun checkout(branch: String)
+    fun merge(branch: String)
+    fun push()
 }
