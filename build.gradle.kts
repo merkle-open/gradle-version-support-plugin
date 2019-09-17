@@ -8,7 +8,7 @@ plugins {
     kotlin("jvm") version kotlinVersion
     `kotlin-dsl`
     id("com.gradle.plugin-publish") version "0.10.1"
-    `maven-publish`
+//    `maven-publish`
     `java-gradle-plugin`
     id("de.gliderpilot.semantic-release") version "1.4.0"
     id("com.github.hierynomus.license-base") version "0.15.0"
@@ -65,19 +65,13 @@ if (!version.toString().endsWith("-SNAPSHOT")){
 tasks.create("licenseHeader"){
     dependsOn("licenseFormatMain", "licenseFormatTest")
 }
+
 dependencies {
     compile(gradleApi())
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.eclipse.jgit:org.eclipse.jgit:5.4.3.201909031940-r")
     implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:5.4.3.201909031940-r")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
 }
 
-tasks.test {
-    useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
-    }
-}
 
