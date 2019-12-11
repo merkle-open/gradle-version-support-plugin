@@ -24,15 +24,23 @@
 package com.namics.oss.gradle.version
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 public open class ReleaseTask : DefaultTask() {
 
+    @Input
     var masterBranch = "master"
+    @Input
     var developBranch = "develop"
+    @Input
     var majorBranches: List<Regex> = emptyList()
+    @Input
     var minorBranches: List<Regex> = listOf(Regex("""^develop.*"""))
+    @Input
     var patchBranches: List<Regex> = listOf(Regex("""^hotfix.*"""))
+    @Internal
     var git : GitManager = NativeGitManager(project)
 
 

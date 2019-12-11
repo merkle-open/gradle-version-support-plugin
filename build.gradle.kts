@@ -4,7 +4,7 @@ group = "com.namics.oss.gradle.version"
 description = "Gradle plugin to support version management."
 
 plugins {
-    val kotlinVersion = "1.3.31"
+    val kotlinVersion = "1.3.50"
     kotlin("jvm") version kotlinVersion
     `kotlin-dsl`
     id("com.gradle.plugin-publish") version "0.10.1"
@@ -12,6 +12,7 @@ plugins {
     `java-gradle-plugin`
     id("de.gliderpilot.semantic-release") version "1.4.0"
     id("com.github.hierynomus.license-base") version "0.15.0"
+    id("com.github.ben-manes.versions") version "0.27.0"
 }
 
 repositories {
@@ -69,8 +70,8 @@ tasks.create("licenseHeader"){
 dependencies {
     compile(gradleApi())
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.eclipse.jgit:org.eclipse.jgit:5.4.3.201909031940-r")
-    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:5.4.3.201909031940-r")
+    implementation("org.eclipse.jgit:org.eclipse.jgit:5.5.1.201910021850-r")
+    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:5.5.1.201910021850-r")
 
 }
 
